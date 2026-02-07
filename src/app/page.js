@@ -3,6 +3,9 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify'; // 新增
 
+// 【关键修复】删除 client 组件中的 metadata 导出
+// export const metadata = { ... } 这部分全部删掉
+
 export default function Home() {
   const [isLogin, setIsLogin] = useState(false);
   const [phone, setPhone] = useState('');

@@ -1,70 +1,104 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { toast } from 'react-toastify'; // 新增
+import { toast } from 'react-toastify';
 
-export default function ProfilePage() {
-  const [user, setUser] = useState(null);
+// 【关键修复】删除 metadata 导出
+
+export default function Profile() {
+  const [phone, setPhone] = useState('');
+  const [username, setUsername] = useState('');
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  // 校验登录状态
   useEffect(() => {
-    // 1. 检查token，没有就强制跳登录
     const token = localStorage.getItem('token');
     if (!token) {
-      toast.error('请先登录');
+      toast.warning('请先登录！');
       router.push('/login');
       return;
     }
+    // 解析手机号
+    const mockPhone = token.replace('mock_token_', '');
+    setPhone(mockPhone);
+    // 模拟获取用户名
+    setUsername(`用户${mockPhone.slice(-4)}`);
+  }, [router]);
 
-    // 2. 解析用户信息
-    const phone = token.replace('mock_token_', '');
-    setUser({ phone });
+  // 模拟保存资料
+  const handleSave = (e) => {
+    e.preventDefault();
+    if (!username) {
+      toast.error('用户名不能为空！');
+      return;
+    }
 
-    // 3. 监听token变化（比如退出登录后，自动跳走）
-    const handleStorageChange = () => {
-      if (!localStorage.getItem('token')) {
-        router.push('/login');
-      }
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    toast.success('已退出登录');
-    router.push('/login');
+    setLoading(true);
+    setTimeout(() => {
+      toast.success('资料保存成功！');
+      setLoading(false);
+    }, 800);
   };
-
-  if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-lg">加载中...</div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto">
-        <div className="bg-white shadow rounded-lg p-6 sm:p-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-6 text-center">个人中心</h1>
+      <div className="max-w-3xl mx-auto bg-white shadow rounded-lg overflow-hidden">
+        <div className="px-4 py-5 sm:px-6 bg-indigo-600 text-white">
+          <h2 className="text-lg font-medium">个人资料</h2>
+        </div>
 
-          <div className="space-y-4">
-            <div className="border-b pb-4">
-              <p className="text-sm text-gray-500">当前登录手机号</p>
-              <p className="text-lg font-medium">{user.phone}</p>
+        <div className="px-4 py-5 sm:p-6">
+          <form onSubmit={handleSave} className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                手机号
+              </label>
+              <div className="mt-1">
+                <input
+                  type="tel"
+                  value={phone}
+                  readOnly
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                />
+              </div>
+              <p className="mt-1 text-sm text-gray-500">手机号不可修改</p>
             </div>
 
-            <div className="pt-4">
+            <div>
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+                用户名
+              </label>
+              <div className="mt-1">
+                <input
+                  id="username"
+                  name="username"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  placeholder="请输入用户名"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3">
               <button
-                onClick={handleLogout}
-                className="w-full bg-red-600 text-white py-3 rounded-md hover:bg-red-700 transition-colors"
+                type="button"
+                onClick={() => router.push('/')}
+                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
-                退出登录
+                返回首页
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+              >
+                {loading ? '保存中...' : '保存修改'}
               </button>
             </div>
-          </div>
+          </form>
         </div>
       </div>
     </div>
