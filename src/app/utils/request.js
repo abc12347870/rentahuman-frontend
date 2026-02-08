@@ -1,22 +1,20 @@
-// src/app/utils/request.js
 import axios from 'axios';
 
-// 创建axios实例，对接后端3001端口
-const request = axios.create({
-  baseURL: 'http://localhost:3001', // 后端地址+端口
-  timeout: 10000, // 请求超时时间
-  headers: {
-    'Content-Type': 'application/json',
-  },
+// ❌ 原来的本地/Render地址
+// const service = axios.create({
+//   baseURL: 'http://localhost:3001',
+//   timeout: 5000
+// });
+
+// ✅ 改成相对路径（Vercel同域名，不用跨域）
+const service = axios.create({
+  baseURL: '/', // 关键：相对路径，自动对接同域名的/api接口
+  timeout: 5000
 });
 
-// 请求拦截器：添加token（登录后自动带token）
-request.interceptors.request.use(
+// 请求拦截器（不用改）
+service.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
     return config;
   },
   (error) => {
@@ -24,15 +22,14 @@ request.interceptors.request.use(
   }
 );
 
-// 响应拦截器：统一处理错误
-request.interceptors.response.use(
+// 响应拦截器（不用改）
+service.interceptors.response.use(
   (response) => {
     return response.data;
   },
   (error) => {
-    alert(error.response?.data?.msg || '请求失败，请检查后端是否启动');
     return Promise.reject(error);
   }
 );
 
-export default request;
+export default service;
